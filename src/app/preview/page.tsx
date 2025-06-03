@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from "next/image";
 
 type TemplateType = 'plain' | 'pink' | 'stickers' | 'yellow' | 'lgreen' | 'custom';
 
@@ -27,55 +28,7 @@ export default function PreviewPage() {
     origY: 0,
   });
 
-  useEffect(() => {
-    const captured = [
-      sessionStorage.getItem('capturedImage1'),
-      sessionStorage.getItem('capturedImage2'),
-      sessionStorage.getItem('capturedImage3'),
-    ].filter(Boolean) as string[];
-
-    if (captured.length === 3) {
-      setImages(captured);
-    } else {
-      router.push('/camera');
-    }
-  }, [router]);
-
-  useEffect(() => {
-    if (images.length === 3) {
-      drawStrip();
-    }
-  }, [images, selectedTemplate, selectedColor]);
-
-  function onDragStart(e: React.DragEvent, index: number) {
-    dragInfo.current = {
-      index,
-      startX: e.clientX,
-      startY: e.clientY,
-      origX: stickers[index].x,
-      origY: stickers[index].y,
-    };
-    e.dataTransfer.setDragImage(new Image(), 0, 0);
-  }
-
-  function onDragEnd(e: React.DragEvent, index: number) {
-    const dx = e.clientX - dragInfo.current.startX;
-    const dy = e.clientY - dragInfo.current.startY;
-
-    setStickers((prev) => {
-      const updated = [...prev];
-      updated[index] = {
-        ...updated[index],
-        x: dragInfo.current.origX + dx,
-        y: dragInfo.current.origY + dy,
-      };
-      return updated;
-    });
-
-    dragInfo.current.index = null;
-  }
-
-  const drawStrip = async () => {
+    const drawStrip = useCallback(async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -113,7 +66,7 @@ export default function PreviewPage() {
     ctx.fillRect(0, 0, width, height);
 
     for (let i = 0; i < images.length; i++) {
-      const img = new Image();
+      const img = new window.Image();
       img.src = images[i];
 
       await new Promise<void>((resolve) => {
@@ -126,7 +79,57 @@ export default function PreviewPage() {
         };
       });
     }
-  };
+  }, [images, selectedTemplate, selectedColor]);
+
+
+  useEffect(() => {
+    const captured = [
+      sessionStorage.getItem('capturedImage1'),
+      sessionStorage.getItem('capturedImage2'),
+      sessionStorage.getItem('capturedImage3'),
+    ].filter(Boolean) as string[];
+
+    if (captured.length === 3) {
+      setImages(captured);
+    } else {
+      router.push('/camera');
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (images.length === 3) {
+      drawStrip();
+    }
+  }, [images, selectedTemplate, selectedColor, drawStrip]);
+
+  function onDragStart(e: React.DragEvent, index: number) {
+    dragInfo.current = {
+      index,
+      startX: e.clientX,
+      startY: e.clientY,
+      origX: stickers[index].x,
+      origY: stickers[index].y,
+    };
+    e.dataTransfer.setDragImage(new window.Image(), 0, 0);
+  }
+
+  function onDragEnd(e: React.DragEvent, index: number) {
+    const dx = e.clientX - dragInfo.current.startX;
+    const dy = e.clientY - dragInfo.current.startY;
+
+    setStickers((prev) => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        x: dragInfo.current.origX + dx,
+        y: dragInfo.current.origY + dy,
+      };
+      return updated;
+    });
+
+    dragInfo.current.index = null;
+  }
+
 
   const handleTemplateSelect = (template: TemplateType) => {
     setSelectedTemplate(template);
@@ -151,7 +154,7 @@ export default function PreviewPage() {
     ctx.drawImage(canvas, 0, 0);
 
     for (const sticker of stickers) {
-      const img = new Image();
+      const img = new window.Image();
       img.src = sticker.src;
       await new Promise((res) => (img.onload = res));
       ctx.drawImage(img, sticker.x, sticker.y, sticker.width, sticker.height);
@@ -189,7 +192,7 @@ export default function PreviewPage() {
               }}
             >
               {/* Sticker image (draggable) */}
-              <img
+              <Image
                 src={sticker.src}
                 alt={`sticker-${i}`}
                 draggable
@@ -231,12 +234,12 @@ export default function PreviewPage() {
 
           {/* Predefined Templates */}
           {[
-            { type: 'template', key: 'plain', color: 'white' },
-            { type: 'template', key: 'pink', color: '#ffe4e6' },
-            { type: 'template', key: 'stickers', color: '#BB3E00' },
-            { type: 'template', key: 'yellow', color: '#F7AD45' },
-            { type: 'template', key: 'lgreen', color: '#657C6A' },
-          ].map(({ type, key, color }) => (
+            {  key: 'plain', color: 'white' },
+            {  key: 'pink', color: '#ffe4e6' },
+            {  key: 'stickers', color: '#BB3E00' },
+            {  key: 'yellow', color: '#F7AD45' },
+            {  key: 'lgreen', color: '#657C6A' },
+          ].map(({key, color }) => (
             <div
               key={key}
               onClick={() => handleTemplateSelect(key as TemplateType)}
@@ -267,10 +270,11 @@ export default function PreviewPage() {
         <div className="flex flex-wrap gap-4 mb-6">
           <div className="flex flex-wrap md:flex-nowrap overflow-x-auto gap-4 mb-6">
 
-            {['/stickers/demo1.png', '/stickers/demo2.png', '/stickers/demo3.png', '/stickers/demo4.png', '/stickers/demo5.png', '/stickers/demo6.png', '/stickers/demo7.png'].map((src) => (
-              <img
+            {['/stickers/demo1.png', '/stickers/demo2.png', '/stickers/demo3.png', '/stickers/demo4.png', '/stickers/demo5.png', '/stickers/demo6.png', '/stickers/demo7.png'].map((src, idx) => (
+              <Image
                 key={src}
                 src={src}
+                alt={`sticker-option-${idx + 1}`}
                 className="w-12 h-12 cursor-pointer border-2 rounded-lg hover:border-black"
                 onClick={() =>
                   setStickers((prev) => [

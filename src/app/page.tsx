@@ -8,15 +8,16 @@ import { usePathname } from 'next/navigation';
 
 
 export default function Home() {
-  const mountRef = useRef<HTMLDivElement>(null);
-  const [showContent, setShowContent] = React.useState(true);
+ 
+  const [showContent] = React.useState(true);
   const pathname = usePathname(); 
-
+  const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let renderer: THREE.WebGLRenderer;
-    let scene: THREE.Scene;
-    let camera: THREE.PerspectiveCamera;
+    const mountNode = mountRef.current;
+    const renderer= new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const scene = new THREE.Scene;
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);;
     let model: THREE.Object3D | null = null;
     let webModel: THREE.Object3D | null = null;
     const clock = new THREE.Clock();
@@ -27,8 +28,7 @@ export default function Home() {
 
 
     // Setup scene
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    
     camera.position.set(
       0,
       isMobile() ? 1.5 : 1,
@@ -36,14 +36,13 @@ export default function Home() {
     );
 
 
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight, false);
-    if (mountRef.current) {
+    if (mountNode) {
       // Clear any existing canvas before appending new one
-      while (mountRef.current.firstChild) {
-        mountRef.current.removeChild(mountRef.current.firstChild);
+      while (mountNode.firstChild) {
+        mountNode.removeChild(mountNode.firstChild);
       }
-      mountRef.current.appendChild(renderer.domElement);
+      mountNode.appendChild(renderer.domElement);
     }
 
 
@@ -211,8 +210,8 @@ export default function Home() {
       window.removeEventListener('focus', restartAnimation);
       if (renderer) {
         renderer.dispose();
-        if (mountRef.current?.contains(renderer.domElement)) {
-          mountRef.current.removeChild(renderer.domElement);
+        if (mountNode?.contains(renderer.domElement)) {
+          mountNode.removeChild(renderer.domElement);
         }
       }
 

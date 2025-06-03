@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Webcam from 'react-webcam';
+import Image from "next/image";
 import { useRouter } from 'next/navigation';
 
 const filters = {
@@ -13,7 +14,7 @@ const filters = {
   mellowTone: 'grayscale(0.3) sepia(0.2) brightness(1.1)',
   polaroidFade: 'brightness(1.2) contrast(0.85) sepia(0.25)',
   oldSchool: 'grayscale(0.5) contrast(1.2) sepia(0.5)',
-  
+
 };
 
 export default function CameraFeed() {
@@ -34,31 +35,14 @@ export default function CameraFeed() {
     setReadyToPreview(false);
   };
 
-  useEffect(() => {
-    if (capturing) {
-      if (countdown > 0) {
-        const timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
-        return () => clearTimeout(timer);
-      } else {
-         setTimeout(() => captureImage(), 100); // Give a small delay to apply the filter
-      }
-    }
-  }, [capturing, countdown]);
-
-  const applyRandomFilter = () => {
-    const filterNames = Object.keys(filters) as (keyof typeof filters)[];
-    const randomFilter = filterNames[Math.floor(Math.random() * filterNames.length)];
-    setSelectedFilter(randomFilter);
-  };
-
-  const captureImage = () => {
+    const captureImage = useCallback(() => {
     const webcam = webcamRef.current;
     if (!webcam) return;
 
     const screenshot = webcam.getScreenshot();
     if (!screenshot) return;
 
-    const img = new Image();
+    const img = new window.Image();
     img.src = screenshot;
 
     img.onload = () => {
@@ -70,11 +54,11 @@ export default function CameraFeed() {
       if (ctx) {
         ctx.filter = filters[selectedFilter] || 'none';
         ctx.save();
-ctx.translate(canvas.width, 0);
-ctx.scale(-1, 1); // flip horizontally
-ctx.filter = filters[selectedFilter] || 'none';
-ctx.drawImage(img, 0, 0, img.width, img.height);
-ctx.restore();
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1); // flip horizontally
+        ctx.filter = filters[selectedFilter] || 'none';
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+        ctx.restore();
 
 
         const filteredDataUrl = canvas.toDataURL('image/jpeg');
@@ -93,7 +77,25 @@ ctx.restore();
         }
       }
     };
+  }, [selectedFilter, setCapturedImages, setFlash, setCountdown, setCapturing, setReadyToPreview, capturedImages.length]);
+  useEffect(() => {
+    if (capturing) {
+      if (countdown > 0) {
+        const timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
+        return () => clearTimeout(timer);
+      } else {
+        setTimeout(() => captureImage(), 100); // Give a small delay to apply the filter
+      }
+    }
+  }, [capturing, countdown, captureImage]);
+
+  const applyRandomFilter = () => {
+    const filterNames = Object.keys(filters) as (keyof typeof filters)[];
+    const randomFilter = filterNames[Math.floor(Math.random() * filterNames.length)];
+    setSelectedFilter(randomFilter);
   };
+
+
 
   const handleNext = () => {
     if (capturedImages.length === 3) {
@@ -117,7 +119,7 @@ ctx.restore();
     >
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         {/* Webcam feed */}
-          <div className="w-full max-w-lg aspect-[4/3] overflow-hidden rounded-2xl shadow-lg relative">
+        <div className="w-full max-w-lg aspect-[4/3] overflow-hidden rounded-2xl shadow-lg relative">
           <Webcam
             ref={webcamRef}
             audio={false}
@@ -125,7 +127,7 @@ ctx.restore();
             videoConstraints={{ facingMode: 'user' }}
             className="w-full h-full object-cover"
             style={{ filter: filters[selectedFilter], transform: 'scaleX(-1)' }} // 🔄 remove mirror
-            
+
           />
 
           {capturing && countdown > 0 && (
@@ -142,7 +144,7 @@ ctx.restore();
         {/* Captured thumbnails */}
         <div className="flex mt-4 gap-2">
           {capturedImages.map((img, index) => (
-            <img
+            <Image 
               key={index}
               src={img}
               alt={`Captured ${index + 1}`}
@@ -158,11 +160,10 @@ ctx.restore();
               key={filterName}
               onClick={() => setSelectedFilter(filterName as keyof typeof filters)}
               disabled={capturing}
-              className={`px-4 py-2 rounded-lg text-sm capitalize transition ${
-                selectedFilter === filterName
+              className={`px-4 py-2 rounded-lg text-sm capitalize transition ${selectedFilter === filterName
                   ? 'bg-white text-black'
                   : 'bg-gray-700 hover:bg-gray-600'
-              }`}
+                }`}
             >
               {filterName.replace(/([A-Z])/g, ' $1').trim()}
             </button>
