@@ -78,7 +78,6 @@ export default function PreviewPage() {
         img.onload = () => {
           const x = 20;
           const y = spacing + (photoHeight + spacing) * i;
-          const photoWidth = width - 40;
           ctx.drawImage(img, x, y);
           resolve();
         };
