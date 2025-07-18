@@ -34,6 +34,7 @@ export default function PreviewPage() {
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    
 
     const width = 350;
     const photoHeight = 200;
@@ -74,7 +75,7 @@ export default function PreviewPage() {
           const x = 20;
           const y = spacing + (photoHeight + spacing) * i;
           const photoWidth = width - 40;
-          ctx.drawImage(img, x, y, photoWidth, photoHeight);
+          ctx.drawImage(img, x, y);
           resolve();
         };
       });

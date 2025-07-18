@@ -95,8 +95,6 @@ export default function CameraFeed() {
     setSelectedFilter(randomFilter);
   };
 
-
-
   const handleNext = () => {
     if (capturedImages.length === 3) {
       capturedImages.forEach((img, index) => {
