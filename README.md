@@ -37,5 +37,3 @@ A modern web photobooth built with Next.js, React, and Three.js. Capture photos,
 - Add your own stickers to `public/stickers/`
 - Add new templates or colors in `src/app/preview/page.tsx`
 
-## License
-MIT
