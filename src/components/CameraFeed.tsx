@@ -1,3 +1,6 @@
+// CameraFeed Component
+// Handles webcam capture, filter application, and photo sequence for the photobooth.
+
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -18,9 +21,11 @@ const filters = {
 };
 
 export default function CameraFeed() {
+  // Webcam reference and router
   const webcamRef = useRef<Webcam>(null);
   const router = useRouter();
 
+  // State for filter, capture sequence, countdown, images, flash, and preview
   const [selectedFilter, setSelectedFilter] = useState<keyof typeof filters>('normal');
   const [capturing, setCapturing] = useState(false);
   const [countdown, setCountdown] = useState(3);
@@ -28,14 +33,15 @@ export default function CameraFeed() {
   const [flash, setFlash] = useState(false);
   const [readyToPreview, setReadyToPreview] = useState(false);
 
+  // Start the photo capture sequence
   const startCaptureSequence = () => {
     setCapturedImages([]);
     setCapturing(true);
     setCountdown(3);
     setReadyToPreview(false);
   };
-
-    const captureImage = useCallback(() => {
+  // Capture an image from the webcam and apply the selected filter
+  const captureImage = useCallback(() => {
     const webcam = webcamRef.current;
     if (!webcam) return;
 
@@ -78,6 +84,7 @@ export default function CameraFeed() {
       }
     };
   }, [selectedFilter, setCapturedImages, setFlash, setCountdown, setCapturing, setReadyToPreview, capturedImages.length]);
+  // Countdown and capture logic
   useEffect(() => {
     if (capturing) {
       if (countdown > 0) {
@@ -88,13 +95,13 @@ export default function CameraFeed() {
       }
     }
   }, [capturing, countdown, captureImage]);
-
+  // Apply a random filter
   const applyRandomFilter = () => {
     const filterNames = Object.keys(filters) as (keyof typeof filters)[];
     const randomFilter = filterNames[Math.floor(Math.random() * filterNames.length)];
     setSelectedFilter(randomFilter);
   };
-
+  // Handle moving to the preview page
   const handleNext = () => {
     if (capturedImages.length === 3) {
       capturedImages.forEach((img, index) => {
@@ -107,7 +114,7 @@ export default function CameraFeed() {
       }, 100);
     }
   };
-
+  // Render the webcam UI, filter buttons, and capture controls
   return (
     <main
       className="relative min-h-screen text-white"

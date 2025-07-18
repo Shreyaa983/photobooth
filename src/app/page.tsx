@@ -1,3 +1,7 @@
+// PhotoBooth Home Page
+// This page renders the animated 3D spider and web using Three.js and GLTF models.
+// Users can interact with the spider and start the photobooth experience.
+
 'use client';
 
 import React, { useEffect, useRef } from 'react';
@@ -11,9 +15,11 @@ export default function Home() {
  
   const [showContent] = React.useState(true);
   const pathname = usePathname(); 
+  // Reference to the DOM node for mounting Three.js renderer
   const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Setup Three.js renderer, scene, camera, and models
     const mountNode = mountRef.current;
     const renderer= new THREE.WebGLRenderer({ antialias: true, alpha: true });
     const scene = new THREE.Scene;
@@ -52,7 +58,7 @@ export default function Home() {
     directionalLight.position.set(5, 5, 5);
     scene.add(ambientLight, directionalLight);
 
-    // Mouse tracking
+    // Mouse tracking for spider movement
     const handleMouseMove = (event: MouseEvent) => {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -119,6 +125,7 @@ export default function Home() {
       (error) => console.error('Error loading Web.glb:', error)
     );
 
+    // Handle spider hop on click
     const handleMouseClick = () => {
       if (!model) return;
       const initialY = model.position.y;
@@ -147,6 +154,7 @@ export default function Home() {
 
     window.addEventListener('click', handleMouseClick);
 
+    // Handle window resize for responsive 3D scene
     const handleResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
@@ -168,6 +176,7 @@ export default function Home() {
 
     window.addEventListener('resize', handleResize);
 
+    // Animation loop for spider and web
     const animate = () => {
       requestAnimationFrame(animate);
       const t = clock.getElapsedTime();
@@ -220,6 +229,7 @@ export default function Home() {
   }, [pathname]);
 
 
+  // Render the 3D scene and landing content
   return (
     <main
       className="relative min-h-screen text-white"

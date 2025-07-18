@@ -1,3 +1,6 @@
+// PhotoBooth Preview Page
+// This page allows users to preview, style, and download their photobooth strip with stickers and templates.
+
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -28,7 +31,8 @@ export default function PreviewPage() {
     origY: 0,
   });
 
-    const drawStrip = useCallback(async () => {
+  // Draw the photo strip on the canvas
+  const drawStrip = useCallback(async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -82,7 +86,7 @@ export default function PreviewPage() {
     }
   }, [images, selectedTemplate, selectedColor]);
 
-
+  // Load captured images from sessionStorage or redirect to camera
   useEffect(() => {
     const captured = [
       sessionStorage.getItem('capturedImage1'),
@@ -97,12 +101,14 @@ export default function PreviewPage() {
     }
   }, [router]);
 
+  // Redraw strip when images or template change
   useEffect(() => {
     if (images.length === 3) {
       drawStrip();
     }
   }, [images, selectedTemplate, selectedColor, drawStrip]);
 
+  // Handle drag start for stickers
   function onDragStart(e: React.DragEvent, index: number) {
     dragInfo.current = {
       index,
@@ -114,6 +120,7 @@ export default function PreviewPage() {
     e.dataTransfer.setDragImage(new window.Image(), 0, 0);
   }
 
+  // Handle drag end for stickers
   function onDragEnd(e: React.DragEvent, index: number) {
     const dx = e.clientX - dragInfo.current.startX;
     const dy = e.clientY - dragInfo.current.startY;
@@ -131,7 +138,7 @@ export default function PreviewPage() {
     dragInfo.current.index = null;
   }
 
-
+  // Template and color selection handlers
   const handleTemplateSelect = (template: TemplateType) => {
     setSelectedTemplate(template);
     setSelectedColor(null);
@@ -142,6 +149,7 @@ export default function PreviewPage() {
     setSelectedColor(color);
   };
 
+  // Download the final strip as an image
   const handleDownload = async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -167,10 +175,12 @@ export default function PreviewPage() {
     link.click();
   };
 
+  // Recapture photos
   const handleRecapture = () => {
     router.push('/camera');
   };
 
+  // Render the preview UI, canvas, controls, and stickers
   return (
     <div className="flex flex-col md:flex-row items-center justify-center min-h-screen text-white p-4 md:p-6 gap-6"
       style={{

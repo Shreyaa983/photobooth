@@ -1,3 +1,9 @@
+/*
+  Global Styles for PhotoBooth App
+  - Sets up Tailwind CSS and color variables for light/dark mode
+  - Applies base font and background color
+*/
+
 @import "tailwindcss";
 
 :root {
